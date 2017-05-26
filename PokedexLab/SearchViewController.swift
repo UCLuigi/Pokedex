@@ -8,17 +8,47 @@
 
 import UIKit
 
-class SearchViewController: UIViewController {
+class SearchViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
 
+    @IBOutlet weak var CollectionViewOutlet: UICollectionView!
+    
     var pokemonArray: [Pokemon] = []
     var filteredArray: [Pokemon] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        CollectionViewOutlet.delegate = self
+        CollectionViewOutlet.dataSource = self
         pokemonArray = PokemonGenerator.getPokemonArray()
 
     }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return PokemonGenerator.categoryDict.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = CollectionViewOutlet.dequeueReusableCell(withReuseIdentifier: "Prototype", for: indexPath) as! CollectionViewCell
+        cell.imageViewOutlet.image = UIImage(named: PokemonGenerator.categoryDict[indexPath.row]!)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        filteredArray = filteredPokemon(ofType: indexPath.row)
+        performSegue(withIdentifier: "SearchtoCategory", sender: Any?.self)
+    }
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let identifier = segue.identifier {
+            if identifier == "SearchtoCategory" {
+                if let dest = segue.destination as? CategoryViewController {
+                    dest.pokemonArray = filteredArray
+                    print(filteredArray[0].name)
+                }
+            }
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
